@@ -1,4 +1,5 @@
-from django.db.utils import IntegrityError
+# from django.db.utils import IntegrityError
+from django.db import IntegrityError
 from django.conf import settings
 import re
 import csv
@@ -20,7 +21,7 @@ class ExtractData:
     
     @staticmethod
     def make_region(region):
-        if "&" in region.split(" "):
+        if "&" in region.split("_"):
             region = region.replace("&","and")
         return region
         
@@ -36,12 +37,20 @@ class ExtractData:
             "Rain_days_1.0mm":"Raindays1mm",
             "Days_of_Air_Frost": "AirFrost"
            }
+        accepted_region = ["UK","England","Wales","Scotland","Northern_Ireland","England_&_Wales","England_N","England_S",
+                           "Scotland_N","Scotland_E","Scotland_W","England_E_&_NE","England_NW_&_N_Wales","Midlands","East_Angelia",
+                           "England_SW_&_S_Wales","England_SE_&_Central_S"]
         self.region = region
         self.parameter = parameter
+        
+        if region not in accepted_region:
+            raise ValueError("Invalid region passed")
+        
         updated_region = ExtractData.make_region(region)
         updated_parameter = parameter_dict.get(parameter, None)
+        
         if updated_parameter is None:
-            raise ValueError("Invalid parameter or region passed")
+            raise ValueError("Invalid parameter passed")
         extraction_url = f"{ExtractData.url}/{updated_parameter}/date/{updated_region}.txt"
         page = requests.get(extraction_url)
         self.data = page.text
@@ -62,6 +71,7 @@ class ExtractData:
                     f.write(','.join(data))
                     f.write('\n')
     
+    
     def rename_cols(self):
         actual_data =pd.read_csv(self.file_path, delimiter=",",index_col=None)
         actual_data.rename(columns={"win":"winter","spr":"spring","aut":"autmn","sum":"summer","ann":"annual"}, inplace=True)
@@ -70,9 +80,11 @@ class ExtractData:
         actual_data.fillna(0.0, inplace=True)
         actual_data.to_csv(self.file_path, index=False)
         
+                 
     def insert_data(self):
         data_dict = defaultdict(float)
         self.rename_cols()
+        count = 0
         with open(self.file_path, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
@@ -84,13 +96,11 @@ class ExtractData:
                     else:
                         data_dict[key] = value
 
-                # Create a new model instance
-                try:
-                    model_instance = WeatherData(region = region, parameter = parameter,**data_dict)
-                    # Save the model instance to the database
-                    model_instance.save()
-                except IntegrityError as e:
-                    pass                    
+                    # if not exists Create a new model instance
+                    if not WeatherData.objects.filter(region = region, parameter = parameter).exists():
+                        model_instance = WeatherData(region = region, parameter = parameter,**data_dict)
+                        # Save the model instance to the database
+                        model_instance.save()
         # delete the scrapped file
         os.remove(self.file_path)
         self.file_path=""
