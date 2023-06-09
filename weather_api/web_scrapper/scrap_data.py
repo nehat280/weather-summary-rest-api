@@ -5,9 +5,9 @@ import csv
 import io
 import os
 import requests
-import time
 import pandas as pd
-from web_scrapper.models import WeatherData
+from collections import defaultdict
+from weather_api.models import WeatherData
 
 class ExtractData:
     url = "https://www.metoffice.gov.uk/pub/data/weather/uk/climate/datasets"
@@ -38,10 +38,9 @@ class ExtractData:
            }
         self.region = region
         self.parameter = parameter
-        print(region, parameter)
         updated_region = ExtractData.make_region(region)
         updated_parameter = parameter_dict.get(parameter, None)
-        if updated_parameter is None or updated_region is None:
+        if updated_parameter is None:
             raise ValueError("Invalid parameter or region passed")
         extraction_url = f"{ExtractData.url}/{updated_parameter}/date/{updated_region}.txt"
         page = requests.get(extraction_url)
@@ -65,42 +64,29 @@ class ExtractData:
     
     def rename_cols(self):
         actual_data =pd.read_csv(self.file_path, delimiter=",",index_col=None)
-        actual_data.rename(columns={"win":"winter","spr":"spring","aut":"autmn","sum":"summer"}, inplace=True)
+        actual_data.rename(columns={"win":"winter","spr":"spring","aut":"autmn","sum":"summer","ann":"annual"}, inplace=True)
         replacements = {"---":0.0, "NaN":0.0,'':0.0}
         actual_data.replace(replacements,inplace=True)
         actual_data.fillna(0.0, inplace=True)
         actual_data.to_csv(self.file_path, index=False)
         
     def insert_data(self):
+        data_dict = defaultdict(float)
         self.rename_cols()
         with open(self.file_path, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 region = self.region
                 parameter = self.parameter
-                year = int(row['year'])
-                jan =  float(row['jan'])
-                feb =  float(row['feb'])
-                mar =  float(row['mar'])
-                apr =  float(row['apr'])
-                may =  float(row['may'])
-                jun =  float(row['jun'])
-                jul =  float(row['jul'])
-                aug =  float(row['aug'])
-                sep =  float(row['sep'])
-                oct =  float(row['oct'])
-                nov =  float(row['nov'])
-                dec =  float(row['dec'])
-                winter = float(row['winter'])
-                summer = float(row['summer'])
-                autmn = float(row['autmn'])
-                spring = float(row['spring'])
+                for key, value in row.items():
+                    if key == "year":
+                        data_dict[key] = int(value)
+                    else:
+                        data_dict[key] = value
+
                 # Create a new model instance
                 try:
-                    model_instance = WeatherData(region = region, parameter = parameter,year=year,
-                                                jan=jan, feb=feb, mar=mar, apr=apr,may=may,jun=jun,jul=jul,aug=aug,sep=sep,
-                                                oct=oct,nov=nov,dec=dec, winter=winter,summer=summer, autmn=autmn, spring=spring)
-
+                    model_instance = WeatherData(region = region, parameter = parameter,**data_dict)
                     # Save the model instance to the database
                     model_instance.save()
                 except IntegrityError as e:
