@@ -11,9 +11,7 @@ def parameter_specific_data(request, year, region,parameter):
     if request.method == "GET":
         try:
             climate = WeatherData.objects.get(year=year, region=region, parameter=parameter) 
-            if climate.exists():
-                climate = climate.first()
-        except:
+        except Exception as e:
             response = get_data(region, parameter)
             if response.status_code == 200:
                 try:
@@ -25,7 +23,7 @@ def parameter_specific_data(request, year, region,parameter):
                 return Response(data={'error':"Invalid Parameter value given"},
                                      status=status.HTTP_404_NOT_FOUND)
         serializer = WeatherDataSerializer(climate)
-        return Response({'data':serializer.data,'status':status.HTTP_200_OK})
+        return Response({'data':serializer.data},status=status.HTTP_200_OK)
     
     if request.method == "DELETE":
         try:

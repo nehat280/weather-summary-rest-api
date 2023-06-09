@@ -84,6 +84,7 @@ class ExtractData:
     def insert_data(self):
         data_dict = defaultdict(float)
         self.rename_cols()
+        weather_obj = WeatherData.objects.filter(region = self.region, parameter = self.parameter)
         with open(self.file_path, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
@@ -96,7 +97,8 @@ class ExtractData:
                         data_dict[key] = value
 
                     # if not exists Create a new model instance
-                    if not WeatherData.objects.filter(region = region, parameter = parameter).exists():
+                    # if not WeatherData.objects.filter(year = data_dict["year"], region = region, parameter = parameter).exists():
+                    if not weather_obj.filter(year=data_dict["year"]).exists():
                         model_instance = WeatherData(region = region, parameter = parameter,**data_dict)
                         # Save the model instance to the database
                         model_instance.save()

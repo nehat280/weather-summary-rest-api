@@ -25,7 +25,7 @@ class WeatherData(models.Model):
     
     def __str__(self) -> str:
         return str(self.year)
-    
+        
     class Meta:
         unique_together = ('region', 'parameter','year')
     
