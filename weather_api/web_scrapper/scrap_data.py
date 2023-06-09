@@ -84,7 +84,6 @@ class ExtractData:
     def insert_data(self):
         data_dict = defaultdict(float)
         self.rename_cols()
-        count = 0
         with open(self.file_path, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
