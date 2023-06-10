@@ -37,20 +37,10 @@ class ExtractData:
             "Rain_days_1.0mm":"Raindays1mm",
             "Days_of_Air_Frost": "AirFrost"
            }
-        accepted_region = ["UK","England","Wales","Scotland","Northern_Ireland","England_&_Wales","England_N","England_S",
-                           "Scotland_N","Scotland_E","Scotland_W","England_E_&_NE","England_NW_&_N_Wales","Midlands","East_Angelia",
-                           "England_SW_&_S_Wales","England_SE_&_Central_S"]
         self.region = region
         self.parameter = parameter
-        
-        if region not in accepted_region:
-            raise ValueError("Invalid region passed")
-        
         updated_region = ExtractData.make_region(region)
         updated_parameter = parameter_dict.get(parameter, None)
-        
-        if updated_parameter is None:
-            raise ValueError("Invalid parameter passed")
         extraction_url = f"{ExtractData.url}/{updated_parameter}/date/{updated_region}.txt"
         page = requests.get(extraction_url)
         self.data = page.text
@@ -72,7 +62,7 @@ class ExtractData:
                     f.write('\n')
     
     
-    def rename_cols(self):
+    def data_cleaning(self):
         actual_data =pd.read_csv(self.file_path, delimiter=",",index_col=None)
         actual_data.rename(columns={"win":"winter","spr":"spring","aut":"autmn","sum":"summer","ann":"annual"}, inplace=True)
         replacements = {"---":0.0, "NaN":0.0,'':0.0}
@@ -83,7 +73,7 @@ class ExtractData:
                  
     def insert_data(self):
         data_dict = defaultdict(float)
-        self.rename_cols()
+        self.data_cleaning()
         weather_obj = WeatherData.objects.filter(region = self.region, parameter = self.parameter)
         with open(self.file_path, 'r') as f:
             reader = csv.DictReader(f)
@@ -97,7 +87,6 @@ class ExtractData:
                         data_dict[key] = value
 
                     # if not exists Create a new model instance
-                    # if not WeatherData.objects.filter(year = data_dict["year"], region = region, parameter = parameter).exists():
                     if not weather_obj.filter(year=data_dict["year"]).exists():
                         model_instance = WeatherData(region = region, parameter = parameter,**data_dict)
                         # Save the model instance to the database

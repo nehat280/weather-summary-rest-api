@@ -23,7 +23,7 @@ class WeatherDataTestCase(APITestCase):
         
     # tests weather data with correct inputs
     def test_get_parameter_specific_data(self):
-        response = self.client.get(reverse('parametric_data',
+        response = self.client.get(reverse('yearly_data',
                                    args=[self.year, 
                                    self.region,
                                    self.parameter]))
@@ -32,7 +32,7 @@ class WeatherDataTestCase(APITestCase):
     # tests incorrect year error response
     def test_get_data_non_existing_obj(self):
         incorrect_year = 1800
-        response = self.client.get(reverse('parametric_data',
+        response = self.client.get(reverse('yearly_data',
                                     args=[incorrect_year, 
                                     self.region,
                                     self.parameter]))
@@ -41,26 +41,39 @@ class WeatherDataTestCase(APITestCase):
     # test incorrect region   
     def test_get_data_invalid_region(self):
         invalid_region = "sample"
-        response = self.client.get(reverse('parametric_data',
+        response = self.client.get(reverse('yearly_data',
                                     args=[self.year, 
                                     invalid_region,
                                     self.parameter]))
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
     # test incorrect region   
     def test_get_data_invalid_parameter(self):
         invalid_parameter = "sample"
-        response = self.client.get(reverse('parametric_data',
+        response = self.client.get(reverse('yearly_data',
                                     args=[self.year, 
                                     self.region,
                                     invalid_parameter]))
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     # tests delete existing obj with correct inputs
-    def test_delete_parametric_data(self):
-        response = self.client.delete(reverse('parametric_data',
+    def test_delete_yearly_data(self):
+        response = self.client.delete(reverse('yearly_data',
                                     args=[self.year, 
                                     self.region,
                                     self.parameter]))
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
-        
+    
+    # test when data for given region and parameter exists in db
+    def test_parametric_data(self):
+        response = self.client.get(reverse('parametric_data',
+                                           args=[self.region,
+                                                 self.parameter]))
+        self.assertEqual(len(response.data["results"]),1)
+    
+    # test when data for given region and parameter does not exists in db
+    def test_non_existing_parametric_data(self):
+        response = self.client.get(reverse('parametric_data',
+                                           args=["UK",
+                                                 self.parameter]))
+        self.assertGreater(len(response.data["results"]),1)

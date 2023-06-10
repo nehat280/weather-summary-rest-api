@@ -7,3 +7,12 @@ class WeatherDataSerializer(serializers.ModelSerializer):
         model = WeatherData
         fields= "__all__"
         
+        
+class YearlyWeatherDataSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = WeatherData
+        fields= ('year',"jan", "feb","mar","apr","may","jun","jul","aug","sep",
+                 "oct","nov","dec","winter","summer","spring","autmn","annual",)
+        
+        
