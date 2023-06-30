@@ -6,7 +6,7 @@ import os
 import requests
 import pandas as pd
 import numpy as np
-from weather_api.models import Region, Parameter, MonthlyData, SeasonsalData
+from weather_api.models import Region, Parameter, Month, Season, MonthlyData, SeasonsalData
 from weather_api.web_scrapper.Constants import new_columns, month_columns,  season_columns
 
 class ExtractData:
@@ -79,15 +79,24 @@ class ExtractData:
 
     def bulk_insert(self, model_name, file_path):
         region,_ = Region.objects.get_or_create(name=self.region)
-        parameter,_ = Parameter.objects.get_or_create(parameter_name=self.parameter)
+        parameter,_ = Parameter.objects.get_or_create(name=self.parameter)
     
         with open(file_path, 'r') as csvfile:
             reader = csv.DictReader(csvfile)
             data = list(reader)
             objects_list = []
             for row in data:
-                ## optimise
-                obj = model_name(region=region, parameter=parameter,**row)
+                if model_name.__name__ == 'MonthlyData':
+                    ## optimisation required
+                    month,_ = Month.objects.get_or_create(name = row['month_name'])
+                    obj = model_name(region = region, parameter = parameter,
+                                     month = month, year=row['year'],
+                                     value = row['monthly_data'])
+                else:
+                    season,_ = Season.objects.get_or_create(name = row['season_name'])
+                    obj = model_name(region=region, parameter=parameter,
+                                     season=season, year=row['year'],
+                                     value = row['seasonal_data'])
                 objects_list.append(obj)
         
         model_name.objects.bulk_create(objects_list)
@@ -95,10 +104,10 @@ class ExtractData:
     def insert_data(self):
         monthly_weather_obj = (MonthlyData.objects.select_related('region')
                                                   .select_related('parameter')
-                                                  .filter(region__name = self.region, parameter__parameter_name = self.parameter))
+                                                  .filter(region__name = self.region, parameter__name = self.parameter))
         seasonal_data_obj = (SeasonsalData.objects.select_related('region')
                                                   .select_related('parameter')
-                                                  .filter(region__name = self.region, parameter__parameter_name = self.parameter))
+                                                  .filter(region__name = self.region, parameter__name = self.parameter))
 
         if not monthly_weather_obj.exists():
             self.bulk_insert(MonthlyData,os.path.join(self.file_path,"monthly_data.csv"))

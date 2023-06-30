@@ -1,7 +1,7 @@
 import traceback
 from weather_api.web_scrapper.scrap_data import ExtractData
 
-# Create your views here.
+
 def get_data(region, parameter):
     try:
         scrap = ExtractData(region,parameter)

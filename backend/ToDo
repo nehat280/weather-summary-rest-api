@@ -11,3 +11,8 @@
 2. check for bulk_create method in scrap_data for region and paramerter. 
     how to use bulk create in django when there we want to create foreign key field also
 3. check why monthly_data is populated so many times
+
+
+1. add an endpoint where we can use annitation and aggregation
+    average of all months data for a region and parameter
+2. normalising season and month name

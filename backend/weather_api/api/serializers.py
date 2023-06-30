@@ -1,12 +1,17 @@
 from rest_framework import serializers
-from weather_api.models import MonthlyData, SeasonsalData, AnnualData
+from weather_api.models import MonthlyData, SeasonsalData, AnnualData, Region, Parameter, Month
 
 class MonthlyDataSerializer(serializers.ModelSerializer):
-    value = serializers.FloatField(source="monthly_data")
+
     class Meta:
         model = MonthlyData
-        fields = ['region','parameter','year','month_name','value']
-        
+        fields = ['region','parameter','year','month','value']
+
+class DictionarySerializer(serializers.Serializer):
+    region = serializers.CharField(max_length=200)
+    month__name = serializers.CharField(max_length=200)
+    parameter = serializers.CharField(max_length=200)
+    avg_month_value = serializers.FloatField()
 
 class AnnualDataSerializer(serializers.ModelSerializer):
     value = serializers.FloatField(source="annual_data")
@@ -16,9 +21,8 @@ class AnnualDataSerializer(serializers.ModelSerializer):
         
         
 class SeasonsalDataSerializer(serializers.ModelSerializer):
-    value = serializers.FloatField(source="seasonal_data")
+    
     class Meta:
         model = SeasonsalData
-        fields= ['region','parameter','year','season_name','value']
-        
+        fields= ['region','parameter','year','season','value']
         
