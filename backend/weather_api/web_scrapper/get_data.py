@@ -9,10 +9,10 @@ def get_data(region, parameter):
         scrap.parse_data()
         scrap.data_cleaning()
         scrap.insert_data()
-        return True
+        
 
     except:
         traceback.print_exc()
-        return False
+        
     
     

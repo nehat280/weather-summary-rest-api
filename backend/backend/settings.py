@@ -131,5 +131,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'weather_api.api.pagination.StandardResultsSetPagination',
-    'PAGE_SIZE': 5,  # Set the default page size for the entire project
 }

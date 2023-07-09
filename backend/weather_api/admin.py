@@ -36,11 +36,11 @@ class MonthAdmin(admin.ModelAdmin):
 
 class MonthlyDataAdmin(admin.ModelAdmin):
     list_display = ('region','show_parameter_url','year','show_month_url','value')
-    list_filter = ("region","parameter","month")
+    list_filter = ("region","parameter","month","year")
 
     def show_month_url(self, obj):
         return create_link(obj, "month")
-    show_month_url.short_description = "Season"
+    show_month_url.short_description = "Month"
 
     def show_parameter_url(self, obj):
         return create_link(obj,'parameter')
