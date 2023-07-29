@@ -2,6 +2,7 @@ from django.db.models import Avg
 from django.db.models.functions import Round
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 
 from weather_api.models import Region, Parameter, MonthlyData, SeasonsalData,AnnualData
 from weather_api.api.serializers import MonthlyDataSerializer,YearlyDataSerializer,AnnualDataSerializer, SeasonsalDataSerializer,DictionarySerializer
@@ -30,11 +31,11 @@ class ValidInputsMixin:
         
         return True
 
-
     
 class MonthlyDataView(ValidInputsMixin, generics.RetrieveAPIView):
     queryset = MonthlyData.objects.all()
     serializer_class = MonthlyDataSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         region = self.kwargs["region"]
@@ -58,6 +59,7 @@ class MonthlyDataView(ValidInputsMixin, generics.RetrieveAPIView):
 
 class AverageDataView(ValidInputsMixin, generics.ListAPIView):
     serializer_class = DictionarySerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         region = self.kwargs["region"]
@@ -78,7 +80,8 @@ class AverageDataView(ValidInputsMixin, generics.ListAPIView):
 
 class YearlyDataView(ValidInputsMixin, generics.ListAPIView):
     serializer_class = YearlyDataSerializer
-
+    permission_classes = [IsAuthenticated]
+    
     def get_queryset(self):
         region = self.kwargs["region"]
         parameter = self.kwargs["parameter"]
@@ -115,6 +118,7 @@ class SeasonalDataView(ValidInputsMixin, generics.ListAPIView):
                                                    region__name=region, 
                                                    parameter__name=parameter)
         return climate
+
 
 #inserting data not implemented
 class AnnualDataView(ValidInputsMixin, generics.RetrieveAPIView):

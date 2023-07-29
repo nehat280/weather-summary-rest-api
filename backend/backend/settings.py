@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'weather_api',
     'debug_toolbar',
+    "graphene_django",
+    'graphql_api',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "weather_api.api.middleware.APICachingMieeldware"
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -131,4 +134,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'weather_api.api.pagination.StandardResultsSetPagination',
+    
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ]
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',  # Use 'django.core.cache.backends.db.DatabaseCache' for database caching
+        'LOCATION': 'unique-location',
+        'TIMEOUT': 3600,  # Cache timeout in seconds (1 hour)
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,  # Maximum number of entries in the cache
+        },
+    }
+}
+
+GRAPHENE = {
+    'SCHEMA': 'backend.schema.schema',
 }
