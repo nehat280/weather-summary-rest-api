@@ -75,3 +75,37 @@ class Query(graphene.ObjectType):
                                                     parameter__name = kwargs["parameter"])
                                         .order_by('year'))
         return climate
+    
+
+class CreateMonthData(graphene.Mutation):
+    id = graphene.Int()
+    region = graphene.Field(RegionType)
+    parameter = graphene.Field(ParameterType)
+    month = graphene.Field(MonthType)
+    value = graphene.Int()
+    year = graphene.Int()
+    value = graphene.Int()
+    
+    class Arguments:
+        region = graphene.String()
+        parameter = graphene.String()
+        month = graphene.String()
+        year = graphene.Int()
+        value = graphene.Int()
+       
+    @classmethod 
+    def mutate(cls, root, info,region, parameter, month, year,value):
+        region_obj,_ = Region.objects.get_or_create(name=region)
+        parameter_obj,_ = Parameter.objects.get_or_create(name=parameter)
+        month_obj,_ = Month.objects.get_or_create(name = month)
+        data = MonthlyData(year = year, month = month_obj, 
+                                                    region=region_obj, 
+                                                    parameter = parameter_obj,value=value)
+        data.save()
+        return CreateMonthData(region = data.region, parameter = data.parameter,
+                               month = data.month, year = data.year,value=value)
+    
+    
+class Mutation(graphene.ObjectType):
+    create_month_data = CreateMonthData.Field()
+        
