@@ -5,6 +5,7 @@ REGIONS = ["UK","England","Wales","Scotland","Northern_Ireland","England_and_Wal
 MONTHS = ["january","february","march","april","may",
             "june","july","august","september","october",
             "november","december"]
+SEASONS = ["winter","spring","autmn","summer"]
 new_columns= {"win":"winter","spr":"spring","aut":"autmn","sum":"summer","ann":"annual",
             "jan":"january","feb":"february","mar":"march","apr":"april","may":"may",
             "jun":"june","jul":"july","aug":"august","sep":"september","oct":"october",
@@ -12,4 +13,4 @@ new_columns= {"win":"winter","spr":"spring","aut":"autmn","sum":"summer","ann":"
 
 month_columns = ["year"] + MONTHS
 
-season_columns = ["winter","spring","autmn","summer","year"]
+season_columns = ["year"] + SEASONS

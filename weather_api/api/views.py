@@ -107,7 +107,6 @@ class SeasonalDataView(ValidInputsMixin, generics.ListAPIView):
         region = self.kwargs["region"]
         parameter = self.kwargs["parameter"]
         year = self.kwargs['year']
-
         climate = SeasonsalData.objects.filter(year=year, 
                                                region__name=region,
                                                parameter__name=parameter)
@@ -138,5 +137,4 @@ class AnnualDataView(ValidInputsMixin, generics.RetrieveAPIView):
             climate = AnnualData.objects.filter(year=year, 
                                                    region__name=region, 
                                                    parameter__name=parameter)
-        print("clinate",climate)
         return climate
